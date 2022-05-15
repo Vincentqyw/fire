@@ -1,0 +1,52 @@
+demo_eval:
+  data_folder: how_data
+  exp_folder: how_data/experiments
+  gpu_id: 0
+  net_path: http://ptak.felk.cvut.cz/personal/toliageo/share/how/models/how_r18.pth
+evaluation:
+  global_descriptor:
+    datasets: []
+  inference:
+    features_num: 1000
+    image_size: 1024
+    scales:
+    - 2.0
+    - 1.414
+    - 1.0
+    - 0.707
+    - 0.5
+    - 0.353
+    - 0.25
+  local_descriptor:
+    asmk:
+      build_ivf:
+        aggregate: {}
+        ivf:
+          use_idf: false
+        kernel:
+          binary: true
+        quantize:
+          multiple_assignment: 1
+      index:
+        gpu_id: 0
+      query_ivf:
+        aggregate: {}
+        quantize:
+          multiple_assignment: 5
+        search:
+          topk: null
+        similarity:
+          alpha: 3.0
+          similarity_threshold: 0.0
+      train_codebook:
+        codebook:
+          size: 64k
+    codebook_training:
+      images: 20000
+      scales:
+      - 1
+    datasets:
+    - val_eccv20
+    - roxford5k
+    - rparis6k
+  multistep: false

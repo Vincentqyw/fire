@@ -1,0 +1,11 @@
+# Demo parameters for training of HOW method -R50
+
+__template__: _train_how.yml
+
+training:
+  optimizer:
+    lr: 1.e-6 # Adam learning rate
+
+model:
+  architecture: resnet50 # Backbone network
+  skip_layer: 1 # How many layers of blocks will be skipped, counting from end
