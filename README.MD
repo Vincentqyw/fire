@@ -69,7 +69,7 @@ python evaluate.py eval_fire.yml -e train_fire -ml train_fire
 ## Pretrained models
 
 For reproducibility, we provide the following model weights for the architecture we use in the paper (ResNet50 without the last block + LIT):
-* Model pre-trained on ImageNet-1K (with Cross-Entropy, the pre-trained model we use for training FIRe) [(link)](http://download.europe.naverlabs.com/ComputerVision/FIRe/pretraining/fire_imagenet.pth) or [fire_SfM_120k.pth](https://github.com/Vincentqyw/fire/blob/main/model/fire_imagenet.pth)
+* Model pre-trained on ImageNet-1K (with Cross-Entropy, the pre-trained model we use for training FIRe) [(link)](http://download.europe.naverlabs.com/ComputerVision/FIRe/pretraining/fire_imagenet.pth) or [fire_imagenet.pth](https://github.com/Vincentqyw/fire/blob/main/model/fire_imagenet.pth)
 * Model trained on SfM-120k trained with FIRe [(link)](http://download.europe.naverlabs.com/ComputerVision/FIRe/official/fire.pth) or [fire_SfM_120k.pth](https://github.com/Vincentqyw/fire/blob/main/model/fire_SfM_120k.pth)
 
 They will be automatically downloaded when running the training / testing script.
