@@ -97,8 +97,8 @@ def eval_asmk(net, inference, globals, *, datasets, codebook_training, asmk):
     logger.info("Starting asmk evaluation")
 
     asmk = asmk_method.ASMKMethod.initialize_untrained(asmk)
-    print("==> init asmk succeed...")
-    print("==> begin to train asmk codebook...")
+    logger.info("init asmk succeed...")
+    logger.info("begin to train asmk codebook...")
     asmk = asmk_train_codebook(net, inference, globals, logger, codebook_training=codebook_training,
                                asmk=asmk, cache_path=None)
 
@@ -125,11 +125,11 @@ def eval_asmk_fire(net, inference, globals, *, datasets, codebook_training, asmk
     logger.info("Starting asmk evaluation")
 
     asmk = asmk_method.ASMKMethod.initialize_untrained(asmk)
-    print("==> init asmk succeed...")
-    print("==> begin to train asmk codebook...")
+    logger.info("init asmk succeed...")
+    logger.info("begin to train asmk codebook...")
     asmk = asmk_train_codebook_fire(net, inference, globals, logger, codebook_training=codebook_training,
                                    asmk=asmk, cache_path=globals['cache_path'])
-    print("==> end to train asmk codebook...")
+    logger.info("end to train asmk codebook...")
 
     results = {}
     for dataset in datasets:
@@ -259,7 +259,7 @@ def asmk_train_codebook(net, inference, globals, logger, *, codebook_training, a
     """Asmk evaluation step 'train_codebook'"""
     if cache_path and cache_path.exists():
         return asmk.train_codebook(None, cache_path=cache_path)
-    print("==> root path is: " , globals['root_path'])
+    logger.info("root path is: " , globals['root_path'])
     images = data_helpers.load_dataset('train', data_root=globals['root_path'])[0]
     images = images[:codebook_training['images']]
     dset   = ImagesFromList(root='', images=images, imsize=inference['image_size'], bbxs=None,
@@ -374,32 +374,32 @@ def _convert_checkpoint(state):
     return state
 
 
-# vincentqin added
-
+# realcat: added to load images from paths
 def load_dataset_fire(db_path,query_path):
     import os
+    globs =  ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG']
+
     db_list,query_list = [],[]
 
-    images_ext = {".jpg", ".png", ".bmp", ".jpeg"}
+    db_images_paths = []
+    for g in globs:
+        db_images_paths += list(Path(db_path).glob('**/'+g))
+    if len(db_images_paths) == 0:
+        raise ValueError(f'Could not find any image in root: {db_path}.')
+    db_images_paths = sorted(list(set(db_images_paths)))
 
-    for image_name in os.listdir(db_path):
-        ext = Path(image_name).suffix
-        if ext in images_ext:
-            db_list.append(os.path.join(db_path,image_name))
+    query_images_paths = []
+    for g in globs:
+        query_images_paths += list(Path(query_path).glob('**/'+g))
+    if len(query_images_paths) == 0:
+        raise ValueError(f'Could not find any image in root: {query_path}.')
+    query_images_paths = sorted(list(set(query_images_paths)))
 
-    for image_name in os.listdir(query_path):
-        ext = Path(image_name).suffix
-        if ext in images_ext:
-            query_list.append(os.path.join(query_path, image_name))
+    for item in db_images_paths:
+        db_list.append(os.path.join(query_path, str(item)))
 
-    # images lists
-    db_output_path = os.path.join(str(Path(db_path).parent),'image_list.txt')
-    with open(db_output_path, 'w') as f:
-        f.write('\n'.join(i for i in db_list))
-
-    query_output_path = os.path.join(str(Path(query_path).parent),'image_list.txt')
-    with open(query_output_path, 'w') as f:
-        f.write('\n'.join(i for i in query_list))
+    for item in query_images_paths:
+        query_list.append(os.path.join(query_path, str(item)))    
 
     images  = db_list
     qimages = query_list

@@ -89,12 +89,6 @@ class FIReNet(HOWNet):
     def forward_local(self, x, *, features_num, scales):
         """Return selected super features"""
         feats, _, strengths = self.get_superfeatures(x, scales=scales)
-
-        # print("==> feats.shape:", len(feats), 'x', feats[0].shape) # 7 x torch.Size([1, 128, 256, 1])
-        # print("==> atten.shape:", len(atten), 'x', atten[0].shape) # 7 x torch.Size([1, 256, 45, 81])
-        # print("==> strengths.shape:", len(strengths), 'x', strengths[0].shape) # 7 x torch.Size([256, 1])
-        # print("==> strengths[0]:", strengths[0])
-
         return HF.how_select_local(feats, strengths, scales=scales, features_num=features_num)
 
 def init_network(architecture, pretrained, skip_layer, dim_reduction, lit, runtime):
@@ -148,7 +142,7 @@ def init_network(architecture, pretrained, skip_layer, dim_reduction, lit, runti
         assert all(['fc' in a for a in unexpected]), "Loading did not go well"
     return net
 
-# vincentqin, copy from how_net
+# copy from how_net
 def extract_vectors(net, dataset, device, *, scales):
     """Return global descriptors in torch.Tensor"""
     net.eval()
@@ -158,43 +152,7 @@ def extract_vectors(net, dataset, device, *, scales):
         vecs = torch.zeros(len(loader), net.meta['outputdim'])
         for i, inp in io_helpers.progress(enumerate(loader), size=len(loader), print_freq=1):
             vecs[i] = net.forward_global(inp.to(device), scales=scales).cpu().squeeze()
-
     return vecs
-
-def extract_test(net, dataset, device, *, features_num, scales):
-
-    net.eval()
-    loader = torch.utils.data.DataLoader(dataset, shuffle=False, pin_memory=True, num_workers=NUM_WORKERS)
-
-    with torch.no_grad():
-        vecs_global = torch.zeros(len(loader), net.meta['outputdim']) # N x 128
-
-        # global
-        i = 0
-        for data in tqdm(loader):
-            vecs_global[i] = net.forward_global(data.to(device), scales=scales).cpu().squeeze()
-            print( vecs_global[i].shape)
-            i = i + 1
-
-        # local descriptor
-        vecs, strengths, locs, scls, imids = [], [], [], [], []
-
-        j = 0
-        print("==> local super feature_num: ", features_num)
-        print("==> local super scales: ", scales)
-        for data in tqdm(loader):
-            output = net.forward_local(data.to(device), features_num=features_num, scales=scales)
-
-            vecs.append(output[0].cpu().numpy())
-            strengths.append(output[1].cpu().numpy())
-            locs.append(output[2].cpu().numpy())
-            scls.append(output[3].cpu().numpy())
-            imids.append(np.full((output[0].shape[0],), j))
-            j = j + 1
-
-    return vecs_global, vecs, strengths, locs, scls, imids
-
-
 
 def extract_vectors_local(net, dataset, device, *, features_num, scales):
     """Return tuple (local descriptors, image ids, strenghts, locations and scales) where locations
